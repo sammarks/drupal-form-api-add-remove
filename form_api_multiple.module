@@ -15,7 +15,8 @@ function test_form($form, &$form_state)
 {
 	$form['#tree'] = true;
 	$form['sets'] = array(
-		'#type' => 'container',
+		'#type' => 'fieldset',
+		'#title' => t('Outer Fieldset'),
 		'#prefix' => '<div id="sets-wrapper">',
 		'#suffix' => '</div>',
 	);
@@ -46,7 +47,10 @@ function test_form($form, &$form_state)
 
 function test_form_fieldset(&$form_state, $index)
 {
-	$fieldset = array();
+	$fieldset = array(
+		'#type' => 'fieldset',
+		'#title' => t('Fieldset'),
+	);
 	$fieldset['field_a'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Field A'),
