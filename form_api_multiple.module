@@ -1,0 +1,108 @@
+<?php
+	
+function form_api_multiple_menu() 
+{
+	return array(
+		'test-form' => array(
+			'page callback' => 'drupal_get_form',
+			'page arguments' => array('test_form'),
+			'access arguments' => array('access content'),
+		)
+	);
+}
+
+function test_form($form, &$form_state) 
+{
+	$form['#tree'] = true;
+	$form['sets'] = array(
+		'#type' => 'container',
+		'#prefix' => '<div id="sets-wrapper">',
+		'#suffix' => '</div>',
+	);
+	
+	if (!array_key_exists('num_items', $form_state)) {
+		$form_state['num_items'] = 1;
+	}
+	
+	for ($i = 0; $i < $form_state['num_items']; $i++) {
+		$form['sets'][$i] = test_form_fieldset($form_state, $i);
+	}
+	
+	$form['add_another'] = array(
+		'#type' => 'button',
+		'#validate' => array('test_form_add_item'),
+		'#value' => 'Add Another',
+		'#ajax' => array(
+			'callback' => 'test_form_add_item_ajax',
+			'wrapper' => 'sets-wrapper',
+		)
+	);
+	
+	$form['actions'] = array('#type' => 'actions');
+	$form['actions']['submit'] = array('#type' => 'submit', '#value' => 'Save');
+	
+	return $form;
+}
+
+function test_form_fieldset(&$form_state, $index)
+{
+	$fieldset = array();
+	$fieldset['field_a'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Field A'),
+		'#required' => true,
+	);
+	$fieldset['field_b'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Field B'),
+		'#required' => true,
+	);
+	
+	if ($form_state['num_items'] > 1) {
+		$fieldset['remove'] = array(
+			'#type' => 'button',
+			'#validate' => array('test_form_remove'),
+			'#value' => t('Remove'),
+			'#name' => $index,
+			'#ajax' => array(
+				'callback' => 'test_form_add_item_ajax',
+				'wrapper' => 'sets-wrapper',
+			),
+			'#limit_validation_errors' => array(),
+		);
+	}
+	
+	return $fieldset;
+}
+
+function test_form_remove($form, &$form_state)
+{
+	$trigger = $form_state['triggering_element'];
+	
+	if ($form_state['num_items'] > 1) {
+		$form_state['num_items']--;
+		$form_state['rebuild'] = true;
+		unset($form_state['input']['sets'][$trigger['#name']]);
+		$form_state['input']['sets'] = array_values($form_state['input']['sets']);
+	}
+}
+
+function test_form_add_item($form, &$form_state)
+{
+	$form_state['num_items']++;
+	$form_state['rebuild'] = true;
+}
+
+function test_form_add_item_ajax($form, $form_state)
+{
+	return $form['sets'];
+}
+
+function test_form_submit($form, &$form_state)
+{	
+	foreach ($form_state['values']['sets'] as $set) {
+		drupal_set_message(t('Value A: @a, Value B: @b', array('@a' => $set['field_a'], '@b' => $set['field_b'])));
+	}
+}
+	
+?>

@@ -1,0 +1,4 @@
+name = "Form API Multiple"
+description = "Testing multiple values in the Drupal form API."
+core = 7.x
+package = "Sandbox"
